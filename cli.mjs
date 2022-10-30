@@ -94,6 +94,31 @@ export function init(stdin, say) {
         }
       },
     })
+    .command({
+      command: "!learns <pokemon> <move>",
+      builder: (yargs) => {
+        yargs
+          .positional("pokemon", { type: "string" })
+          .positional("move", { type: "string" });
+      },
+      handler: async (argv) => {
+        try {
+          const context = { say };
+          const pokemon = await fetchPokemon(argv.pokemon);
+          const move = argv.move.toLowerCase();
+          const learns = pokemon.moves.some((x) => x.move.name === move);
+          const result = learns ? "DOES" : "DOES NOT";
+          const message = `${pokemon.name} (№ ${pokemon.species.id}) ${result} learn ${argv.move}`;
+          context.say(message);
+        } catch (error) {
+          if (error.name === "FetchError") {
+            context.say(error.message);
+          } else {
+            throw error;
+          }
+        }
+      },
+    })
     .help(false)
     .version(false)
     .parse(args);
